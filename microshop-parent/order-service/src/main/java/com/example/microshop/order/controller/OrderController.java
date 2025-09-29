@@ -42,4 +42,9 @@ public class OrderController {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/status")
+    public void updateStatus(@PathVariable Long id, @RequestParam String status) {
+        orderService.updateStatus(id, status);
+    }
 }
