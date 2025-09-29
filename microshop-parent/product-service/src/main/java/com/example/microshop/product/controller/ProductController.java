@@ -1,6 +1,7 @@
 package com.example.microshop.product.controller;
 
 import com.example.microshop.product.dto.ProductDto;
+import com.example.microshop.product.entity.Product;
 import com.example.microshop.product.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,12 @@ public class ProductController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<ProductDto> getOne(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public List<Product> searchProducts(@RequestParam String name) {
+        return service.searchProductsByName(name);
     }
 
     @PostMapping
