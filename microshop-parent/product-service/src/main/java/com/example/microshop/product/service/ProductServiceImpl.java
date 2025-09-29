@@ -78,4 +78,9 @@ public class ProductServiceImpl implements ProductService {
         }
         repository.deleteById(id);
     }
+
+    @Override
+    public List<Product> searchProductsByName(String name) {
+        return repository.findByNameContainingIgnoreCase(name);
+    }
 }
