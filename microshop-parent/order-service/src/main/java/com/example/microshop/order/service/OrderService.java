@@ -89,4 +89,11 @@ public class OrderService {
         dto.setQuantity(item.getQuantity());
         return dto;
     }
+
+    public void updateStatus(Long id, String status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        order.setStatus(status);
+        orderRepository.save(order);
+    }
 }
