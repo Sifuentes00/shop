@@ -9,8 +9,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -32,6 +34,13 @@ public class ProductController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<ProductDto> getOne(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
+    }
+
+    @GetMapping("/{id}/price")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public ResponseEntity<BigDecimal> getPrice(@PathVariable Long id) {
+        ProductDto product = service.findById(id);
+        return ResponseEntity.ok(product.getPrice());
     }
 
     @GetMapping("/search")

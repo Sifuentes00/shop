@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "order-service", url = "${order.service.url:http://localhost:8082}", configuration = FeignConfig.class)
+@FeignClient(name = "order-service", url = "${order.service.url:http://order-service:8082}", configuration = FeignConfig.class)
 public interface OrderClient {
 
     @GetMapping("/api/orders/{id}")

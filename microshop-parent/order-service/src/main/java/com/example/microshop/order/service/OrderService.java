@@ -1,5 +1,6 @@
 package com.example.microshop.order.service;
 
+import com.example.microshop.order.client.service.ProductClient;
 import com.example.microshop.order.dto.OrderDto;
 import com.example.microshop.order.dto.OrderItemDto;
 import com.example.microshop.order.entity.Order;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductClient productClient;
 
     public List<OrderDto> getAllOrders() {
         return orderRepository.findAll().stream()
@@ -31,33 +34,39 @@ public class OrderService {
     }
 
     public OrderDto createOrder(OrderDto orderDto) {
+        if (orderDto.getItems() == null || orderDto.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Order must contain at least one item");
+        }
+
         Order order = new Order();
-        order.setUserId(orderDto.getUserId()); // пока руками, позже возьмем из токена
+        order.setUserId(orderDto.getUserId());
         order.setStatus("NEW");
         order.setCreatedAt(Instant.now());
         order.setUpdatedAt(Instant.now());
 
-        List<OrderItem> items = orderDto.getItems().stream()
-                .map(dto -> {
-                    OrderItem item = new OrderItem();
-                    item.setProductId(dto.getProductId());
-                    item.setQuantity(dto.getQuantity());
-                    item.setOrder(order);
-                    return item;
-                })
-                .toList();
+        List<OrderItem> items = new ArrayList<>();
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (OrderItemDto dto : orderDto.getItems()) {
+            BigDecimal price = Optional.ofNullable(productClient.getProductPrice(dto.getProductId()))
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + dto.getProductId()));
+
+            OrderItem item = new OrderItem();
+            item.setProductId(dto.getProductId());
+            item.setQuantity(dto.getQuantity());
+            item.setOrder(order);
+            items.add(item);
+
+            total = total.add(price.multiply(BigDecimal.valueOf(dto.getQuantity())));
+        }
 
         order.setItems(items);
-
-        // пересчет суммы (заглушка — 100 за штуку)
-        BigDecimal total = items.stream()
-                .map(i -> BigDecimal.valueOf(i.getQuantity() * 100))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         order.setTotalAmount(total);
 
         return toDto(orderRepository.save(order));
     }
+
+
 
     public void deleteOrder(Long id) {
         orderRepository.deleteById(id);

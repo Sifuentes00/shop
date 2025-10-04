@@ -1,0 +1,105 @@
+version: '3.9'
+services:
+
+  # Postgres для всех сервисов
+  microshop-postgres:
+    image: postgres:15
+    container_name: microshop-postgres
+    environment:
+      POSTGRES_DB: microshop
+      POSTGRES_USER: microshop
+      POSTGRES_PASSWORD: microshop
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - microshop-net
+
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    container_name: microshop-keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://microshop-postgres:5432/microshop
+      KC_DB_USERNAME: microshop
+      KC_DB_PASSWORD: microshop
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HOSTNAME: keycloak
+    command: start-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - microshop-postgres
+    networks:
+      - microshop-net
+
+
+  # Product Service
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://microshop-postgres:5432/microshop
+      SPRING_DATASOURCE_USERNAME: microshop
+      SPRING_DATASOURCE_PASSWORD: microshop
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/microshop
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/microshop/protocol/openid-connect/certs
+      depends_on:
+    depends_on:
+      - microshop-postgres
+      - keycloak
+    networks:
+      - microshop-net
+
+
+  # Order Service
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://microshop-postgres:5432/microshop
+      SPRING_DATASOURCE_USERNAME: microshop
+      SPRING_DATASOURCE_PASSWORD: microshop
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/microshop
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/microshop/protocol/openid-connect/certs
+    depends_on:
+      - microshop-postgres
+      - keycloak
+      - product-service
+    networks:
+      - microshop-net
+
+  # Payment Service
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://microshop-postgres:5432/microshop
+      SPRING_DATASOURCE_USERNAME: microshop
+      SPRING_DATASOURCE_PASSWORD: microshop
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/microshop
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/microshop/protocol/openid-connect/certs
+    depends_on:
+      - microshop-postgres
+      - keycloak
+      - order-service
+    networks:
+      - microshop-net
+
+volumes:
+  pgdata:
+
+networks:
+  microshop-net:
+    driver: bridge

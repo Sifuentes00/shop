@@ -1,5 +1,6 @@
 package com.example.microshop.order.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,6 +15,8 @@ public class OrderDto {
     private BigDecimal totalAmount;
     private Instant createdAt;
     private Instant updatedAt;
+
+    @NotNull
     private List<OrderItemDto> items;
 }
 
