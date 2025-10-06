@@ -58,7 +58,7 @@ http://localhost:8088/docs/
 
 Файлы документации находятся в:
 
-docs/source/
+    docs/source/
 
     ├── index.rst
 
