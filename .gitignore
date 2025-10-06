@@ -14,3 +14,19 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv
+venv/
+
+
+# Sphinx build
+docs/build/
+
+# Logs
+*.log

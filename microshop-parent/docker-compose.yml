@@ -1,6 +1,22 @@
 version: '3.9'
 services:
 
+  microshop-apache:
+    image: httpd:2.4
+    container_name: microshop-apache
+    ports:
+      - "8088:80"
+    volumes:
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./apache/proxy.conf:/usr/local/apache2/conf/extra/proxy.conf
+      - ./apache/docs/build/html:/usr/local/apache2/htdocs/docs
+    depends_on:
+      - product-service
+      - order-service
+      - payment-service
+    networks:
+      - microshop-net
+
   # Postgres для всех сервисов
   microshop-postgres:
     image: postgres:15
@@ -30,6 +46,7 @@ services:
       KC_HOSTNAME_STRICT: false
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HOSTNAME: keycloak
+      KEYCLOAK_FRONTEND_URL: http://localhost:8080/
     command: start-dev
     ports:
       - "8080:8080"
@@ -102,4 +119,5 @@ volumes:
 
 networks:
   microshop-net:
+    name: microshop-net
     driver: bridge
