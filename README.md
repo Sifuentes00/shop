@@ -57,19 +57,20 @@ payment-service может обновлять статус оплаты чере
 http://localhost:8088/docs/
 
 Файлы документации находятся в:
+
 docs/source/
 
- ├── index.rst
+    ├── index.rst
 
- ├── quickstart.rst
+    ├── quickstart.rst
 
- ├── api_reference.rst
+    ├── api_reference.rst
 
- ├── product_service.rst
+    ├── product_service.rst
 
- ├── order_service.rst
- 
- └── payment_service.rst
+    ├── order_service.rst
+
+    └── payment_service.rst
 
 ## 🛠️ Технологии
 
